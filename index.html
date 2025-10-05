@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faridpur Polytechnic Institute Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Custom Styles */
+      body {
+        font-family: "Inter", sans-serif;
+        color: #e2e8f0; /* Slate 200 */
+        overflow-x: hidden;
+      }
+
+      /* Animated Gradient Background */
+      .animated-bg {
+        background: linear-gradient(300deg, #0f172a, #1e293b, #0f172a);
+        background-size: 180% 180%;
+        animation: gradient-animation 18s ease infinite;
+      }
+
+      @keyframes gradient-animation {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Glassmorphism Effect */
+      .glass-card {
+        background: rgba(30, 41, 59, 0.5); /* Slate 800 with opacity */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(51, 65, 85, 0.3); /* Slate 700 with opacity */
+        border-radius: 1rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); /* Sky-400 glow */
+      }
+
+      /* Scroll-triggered animation styles */
+      .anim-element,
+      .stagger-item {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        will-change: opacity, transform;
+      }
+
+      .anim-element.is-visible,
+      .stagger-item.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Animated progress bar fill */
+      .progress-bar-fill {
+        transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+
+      /* File Tree Styles */
+      .tree,
+      .nested {
+        list-style-type: none;
+        padding-left: 1.25rem;
+      }
+      .tree {
+        padding-left: 0;
+      }
+      .tree li {
+        margin: 0.25rem 0;
+      }
+      .tree .caret {
+        cursor: pointer;
+        user-select: none;
+        display: inline-block;
+        transition: transform 0.2s ease-in-out;
+        margin-right: 0.5rem;
+      }
+      .tree .caret::before {
+        content: "▶";
+        color: #64748b;
+        display: inline-block;
+        margin-right: 6px;
+      }
+      .tree .caret-down::before {
+        transform: rotate(90deg);
+      }
+      .tree .folder::before {
+        content: "📁";
+        margin-right: 8px;
+        font-size: 1.1em;
+      }
+      .tree .file::before {
+        content: "📄";
+        margin-right: 8px;
+        font-size: 1.1em;
+        color: #94a3b8;
+      }
+      .nested {
+        display: none;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+      }
+      .nested.active {
+        display: block;
+        opacity: 1;
+        max-height: 1000px; /* Adjust as needed */
+      }
+
+      /* Custom scrollbar for file tree */
+      .tree-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      .tree-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .tree-container::-webkit-scrollbar-thumb {
+        background-color: #475569;
+        border-radius: 20px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+      .tree-container {
+        scrollbar-width: thin;
+        scrollbar-color: #475569 transparent;
+      }
+    </style>
+  </head>
+  <body class="animated-bg text-slate-200">
+    <div class="container mx-auto p-4 md:p-8">
+      <!-- Header -->
+      <header class="text-center mb-12 md:mb-16 anim-element">
+        <h1
+          class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-300 mb-2"
+        >
+          Faridpur Polytechnic Institute
+        </h1>
+        <p class="text-lg md:text-xl text-slate-400">
+          Management System Project Dashboard
+        </p>
+      </header>
+
+      <main class="space-y-20">
+        <!-- Team Details Section -->
+        <section class="anim-element">
+          <h2 class="text-3xl font-bold text-center mb-8 text-slate-100">
+            Development Team
+          </h2>
+          <div
+            id="teamGrid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ></div>
+        </section>
+
+        <!-- Project Progress Section -->
+        <section class="anim-element">
+          <h2 class="text-3xl font-bold text-center mb-8 text-slate-100">
+            Project Progress
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="glass-card p-6 stagger-item">
+              <h3 class="font-semibold text-lg mb-3">Overall Progress</h3>
+              <div class="w-full bg-slate-700 rounded-full h-3.5 relative">
+                <div
+                  class="progress-bar-fill bg-sky-500 h-3.5 rounded-full"
+                  data-progress="75"
+                  style="width: 0"
+                ></div>
+                <span
+                  class="absolute right-3 top-[-2px] text-sm font-bold text-white"
+                  >75%</span
+                >
+              </div>
+            </div>
+            <div class="glass-card p-6 stagger-item">
+              <h3 class="font-semibold text-lg mb-3">Frontend Development</h3>
+              <div class="w-full bg-slate-700 rounded-full h-3.5 relative">
+                <div
+                  class="progress-bar-fill bg-emerald-500 h-3.5 rounded-full"
+                  data-progress="90"
+                  style="width: 0"
+                ></div>
+                <span
+                  class="absolute right-3 top-[-2px] text-sm font-bold text-white"
+                  >90%</span
+                >
+              </div>
+            </div>
+            <div class="glass-card p-6 stagger-item">
+              <h3 class="font-semibold text-lg mb-3">Backend Development</h3>
+              <div class="w-full bg-slate-700 rounded-full h-3.5 relative">
+                <div
+                  class="progress-bar-fill bg-amber-500 h-3.5 rounded-full"
+                  data-progress="70"
+                  style="width: 0"
+                ></div>
+                <span
+                  class="absolute right-3 top-[-2px] text-sm font-bold text-white"
+                  >70%</span
+                >
+              </div>
+            </div>
+            <div class="glass-card p-6 stagger-item">
+              <h3 class="font-semibold text-lg mb-3">Database Management</h3>
+              <div class="w-full bg-slate-700 rounded-full h-3.5 relative">
+                <div
+                  class="progress-bar-fill bg-rose-500 h-3.5 rounded-full"
+                  data-progress="65"
+                  style="width: 0"
+                ></div>
+                <span
+                  class="absolute right-3 top-[-2px] text-sm font-bold text-white"
+                  >65%</span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- File Structure Section -->
+        <section class="anim-element">
+          <h2 class="text-3xl font-bold text-center mb-8 text-slate-100">
+            Project File Structure
+          </h2>
+          <div class="glass-card p-6 tree-container overflow-auto">
+            <!-- File tree is dynamically generated from your README -->
+            <ul class="tree">
+              <li>
+                <span class="caret"></span
+                ><span class="folder">faridpur-polytechnic-management</span>
+                <ul class="nested">
+                  <li>
+                    <span class="caret"></span
+                    ><span class="folder">client</span>
+                    <ul class="nested">
+                      <li><span class="folder">public</span></li>
+                      <li>
+                        <span class="caret"></span
+                        ><span class="folder">src</span>
+                        <ul class="nested">
+                          <li><span class="folder">assets</span></li>
+                          <li>
+                            <span class="caret"></span
+                            ><span class="folder">components</span>
+                            <ul class="nested">
+                              <li>
+                                <span class="file">AbsenceReportList.js</span>
+                              </li>
+                              <li>
+                                <span class="file">... (30 more files)</span>
+                              </li>
+                              <li><span class="file">UserList.js</span></li>
+                            </ul>
+                          </li>
+                          <li>
+                            <span class="caret"></span
+                            ><span class="folder">context</span>
+                            <ul class="nested">
+                              <li><span class="file">AuthContext.js</span></li>
+                            </ul>
+                          </li>
+                          <li>
+                            <span class="caret"></span
+                            ><span class="folder">hooks</span>
+                            <ul class="nested">
+                              <li><span class="file">useApi.js</span></li>
+                            </ul>
+                          </li>
+                          <li>
+                            <span class="caret"></span
+                            ><span class="folder">pages</span>
+                            <ul class="nested">
+                              <li>
+                                <span class="file">AdminDashboard.js</span>
+                              </li>
+                              <li>
+                                <span class="file">... (5 more files)</span>
+                              </li>
+                              <li>
+                                <span class="file">TeacherDashboard.js</span>
+                              </li>
+                            </ul>
+                          </li>
+                          <li><span class="folder">routes</span></li>
+                          <li><span class="file">App.js</span></li>
+                          <li><span class="file">index.css</span></li>
+                          <li><span class="file">index.js</span></li>
+                        </ul>
+                      </li>
+                      <li><span class="file">package.json</span></li>
+                      <li><span class="file">tailwind.config.js</span></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <span class="caret"></span
+                    ><span class="folder">server</span>
+                    <ul class="nested">
+                      <li><span class="folder">config</span></li>
+                      <li><span class="folder">controllers</span></li>
+                      <li><span class="folder">middleware</span></li>
+                      <li><span class="folder">migrations</span></li>
+                      <li><span class="folder">models</span></li>
+                      <li><span class="folder">routes</span></li>
+                      <li><span class="folder">seeders</span></li>
+                      <li><span class="file">.env</span></li>
+                      <li><span class="file">index.js</span></li>
+                      <li><span class="file">package.json</span></li>
+                    </ul>
+                  </li>
+                  <li><span class="file">API_Endpoints.md</span></li>
+                  <li><span class="file">ER_Diagram.md</span></li>
+                  <li><span class="file">README.md</span></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </section>
+        <!-- Key Features Section -->
+        <section class="anim-element">
+          <h2 class="text-3xl font-bold text-center mb-8 text-slate-100">
+            Core System Features
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="glass-card p-6 flex flex-col items-center text-center stagger-item"
+            >
+              <svg
+                class="w-12 h-12 mb-4 text-sky-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.928A3 3 0 007.5 12.5a3 3 0 00-3 3.72m-3.122c1.129.093 2.21.093 3.3.093s2.171 0 3.3-.093m0 0l-1.5-1.5m1.5 1.5l-1.5-1.5m-3.75 5.25c.621 0 1.242 0 1.864 0l.001.001.001.001h3.391l.001-.001.001-.001c.623 0 1.244 0 1.865 0m-7.5 0h7.5"
+                />
+              </svg>
+              <h3 class="text-xl font-bold mb-2">Authentication & Roles</h3>
+              <p class="text-slate-400 text-sm">
+                Secure JWT-based login with role-based access control for
+                Admins, Teachers, and Students.
+              </p>
+            </div>
+            <div
+              class="glass-card p-6 flex flex-col items-center text-center stagger-item"
+            >
+              <svg
+                class="w-12 h-12 mb-4 text-sky-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                />
+              </svg>
+              <h3 class="text-xl font-bold mb-2">Student & Teacher Profiles</h3>
+              <p class="text-slate-400 text-sm">
+                Complete CRUD operations for managing student and teacher
+                information, including departments and semesters.
+              </p>
+            </div>
+            <div
+              class="glass-card p-6 flex flex-col items-center text-center stagger-item"
+            >
+              <svg
+                class="w-12 h-12 mb-4 text-sky-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 14.25h.008v.008H12v-.008z"
+                />
+              </svg>
+              <h3 class="text-xl font-bold mb-2">Daily Attendance Calendar</h3>
+              <p class="text-slate-400 text-sm">
+                Visual calendar for tracking daily attendance, with automated
+                holiday marking for weekends and special events.
+              </p>
+            </div>
+            <div
+              class="glass-card p-6 flex flex-col items-center text-center stagger-item"
+            >
+              <svg
+                class="w-12 h-12 mb-4 text-sky-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008H12v-.008z"
+                />
+              </svg>
+              <h3 class="text-xl font-bold mb-2">
+                Absence Escalation Workflow
+              </h3>
+              <p class="text-slate-400 text-sm">
+                Automated notifications for 1, 3, and 7-day absences, leading to
+                reports and student status changes.
+              </p>
+            </div>
+            <div
+              class="glass-card p-6 flex flex-col items-center text-center stagger-item"
+            >
+              <svg
+                class="w-12 h-12 mb-4 text-sky-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
+                />
+              </svg>
+              <h3 class="text-xl font-bold mb-2">Powerful Admin Dashboard</h3>
+              <p class="text-slate-400 text-sm">
+                Configure institute settings, manage holidays, assign teachers
+                to courses, and review absence reports.
+              </p>
+            </div>
+            <div
+              class="glass-card p-6 flex flex-col items-center text-center stagger-item"
+            >
+              <svg
+                class="w-12 h-12 mb-4 text-sky-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
+                />
+              </svg>
+              <h3 class="text-xl font-bold mb-2">Modern & Responsive UI</h3>
+              <p class="text-slate-400 text-sm">
+                Built with React and TailwindCSS for a seamless experience on
+                any device, from desktop to mobile.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="text-center mt-20 text-slate-500 text-sm anim-element">
+        <p>&copy; 2025 Faridpur Polytechnic Institute. All Rights Reserved.</p>
+      </footer>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- Intersection Observer for animations ---
+        const animatedElements = document.querySelectorAll(".anim-element");
+        const observer = new IntersectionObserver(
+          (entries, observer) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("is-visible");
+
+                // Stagger animation for child items
+                const staggerItems =
+                  entry.target.querySelectorAll(".stagger-item");
+                staggerItems.forEach((item, index) => {
+                  item.style.transitionDelay = `${index * 100}ms`;
+                  item.classList.add("is-visible");
+                });
+
+                // Animate progress bars
+                const progressBars =
+                  entry.target.querySelectorAll(".progress-bar-fill");
+                if (progressBars.length > 0) {
+                  progressBars.forEach((bar) => {
+                    const progress = bar.getAttribute("data-progress");
+                    setTimeout(() => {
+                      bar.style.width = progress + "%";
+                    }, 200);
+                  });
+                }
+
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+
+        animatedElements.forEach((el) => {
+          observer.observe(el);
+        });
+
+        // --- Interactive File Tree Logic ---
+        // --- Interactive File Tree Logic ---
+
+        // Select all caret elements
+        const treeToggles = document.querySelectorAll(".tree .caret");
+
+        treeToggles.forEach((toggle) => {
+          // Make all items active by default
+          toggle.classList.add("caret-down");
+          const nestedList = toggle.parentElement.querySelector(".nested");
+          if (nestedList) {
+            nestedList.classList.add("active");
+          }
+
+          // Add click listener to still allow toggling
+          toggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            toggle.classList.toggle("caret-down");
+            if (nestedList) {
+              nestedList.classList.toggle("active");
+            }
+          });
+        });
+      });
+
+      // --- Team Data ---
+      const teamData = [
+        {
+          name: "Md.Musaddik Hossain",
+          role: "Team Leader",
+          roleBg: "bg-sky-500",
+          boardRoll: 731286,
+          focus: "Full-Stack & Project Lead",
+          nameColor: "text-sky-400",
+        },
+        {
+          name: "waiting...",
+          role: "Member",
+          roleBg: "bg-slate-600",
+          boardRoll: 11111,
+          focus: "Frontend Development",
+          nameColor: "text-slate-100",
+        },
+        {
+          name: "waiting...",
+          role: "Member",
+          roleBg: "bg-slate-600",
+          boardRoll: 11111,
+          focus: "Backend Development",
+          nameColor: "text-slate-100",
+        },
+        {
+          name: "waiting...",
+          role: "Member",
+          roleBg: "bg-slate-600",
+          boardRoll: 11111,
+          focus: "UI/UX Design",
+          nameColor: "text-slate-100",
+        },
+        {
+          name: "waiting...",
+          role: "Member",
+          roleBg: "bg-slate-600",
+          boardRoll: 11111,
+          focus: "Database Management",
+          nameColor: "text-slate-100",
+        },
+      ];
+
+      // --- Render Team Cards ---
+      const teamGrid = document.getElementById("teamGrid");
+
+      teamData.forEach((member) => {
+        const card = document.createElement("div");
+        card.className = "glass-card p-6 stagger-item";
+
+        card.innerHTML = `
+      <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-700">
+        <h3 class="text-xl font-bold ${member.nameColor}">${member.name}</h3>
+        <span class="text-xs font-bold py-1 px-3 rounded-full ${member.roleBg} text-white">${member.role}</span>
+      </div>
+      <div>
+        <p class="text-slate-400"><strong class="text-slate-200">Board Roll:</strong> ${member.boardRoll}</p>
+        <p class="text-slate-400"><strong class="text-slate-200">Primary Focus:</strong> ${member.focus}</p>
+      </div>
+    `;
+
+        teamGrid.appendChild(card);
+      });
+    </script>
+  </body>
+</html>
