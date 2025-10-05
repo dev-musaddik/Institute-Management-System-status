@@ -142,6 +142,156 @@
         scrollbar-width: thin;
         scrollbar-color: #475569 transparent;
       }
+
+      /* //live link */
+      /* TICKER/ MARQUEE */
+      .ticker-wrapper {
+        position: relative;
+      }
+      .ticker {
+        display: inline-flex;
+        gap: 3rem;
+        padding-left: 100%;
+        animation: ticker-scroll 20s linear infinite;
+      }
+      /* duplicate content to make continuous loop */
+      .ticker > .ticker-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+        padding: 0 0.5rem;
+      }
+      @keyframes ticker-scroll {
+        0% {
+          transform: translateX(0%);
+        }
+        100% {
+          transform: translateX(-50%);
+        } /* we duplicate items for seamless loop */
+      }
+
+      /* Card glow + hover */
+      .live-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid rgba(148, 163, 184, 0.06);
+        box-shadow: 0 6px 24px -12px rgba(2, 6, 23, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.02);
+        transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.2, 1),
+          box-shadow 0.35s;
+      }
+      .live-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 20px 40px -10px rgba(56, 189, 248, 0.08),
+          0 6px 30px rgba(2, 6, 23, 0.65);
+      }
+      /* animated border glow */
+      .live-card::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(
+          90deg,
+          rgba(59, 130, 246, 0),
+          rgba(14, 165, 233, 0.18),
+          rgba(59, 130, 246, 0)
+        );
+        filter: blur(8px);
+        opacity: 0;
+        transition: opacity 0.35s;
+        pointer-events: none;
+      }
+      .live-card:hover::before {
+        opacity: 1;
+      }
+
+      /* running activity bar inside card */
+      .runbar {
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        position: relative;
+        margin-top: 0.75rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      }
+      .runbar .fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 40%;
+        background: linear-gradient(
+          90deg,
+          rgba(14, 165, 233, 0.9),
+          rgba(59, 130, 246, 0.9)
+        );
+        transform: translateX(-120%);
+        animation: runbar-slide 2.2s linear infinite;
+        will-change: transform;
+      }
+      @keyframes runbar-slide {
+        0% {
+          transform: translateX(-120%);
+        }
+        50% {
+          transform: translateX(10%);
+        }
+        100% {
+          transform: translateX(120%);
+        }
+      }
+
+      /* small status pulse */
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+        animation: pulse 1.6s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        70% {
+          transform: scale(1.5);
+          opacity: 0.4;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* subtle stagger appear on load (JS will add .show) */
+      .stagger-in {
+        opacity: 0;
+        transform: translateY(10px) scale(0.995);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+      .stagger-in.show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      /* responsiveness for ticker text */
+      .ticker-item .label {
+        font-weight: 600;
+        color: rgba(148, 163, 184, 1);
+      }
+      .ticker-item .project {
+        font-weight: 700;
+        color: rgba(14, 165, 233, 1);
+      }
     </style>
   </head>
   <body class="animated-bg text-slate-200">
@@ -159,6 +309,29 @@
       </header>
 
       <main class="space-y-20">
+        <!-- ===== Live Projects Section (drop after your Development Team section) ===== -->
+        <section class="anim-element mt-12">
+          <h2 class="text-3xl font-bold text-center mb-6 text-slate-100">
+            Live Projects
+          </h2>
+
+          <!-- Running Ticker / Marquee -->
+          <div class="overflow-hidden rounded-xl mb-8 border border-slate-700">
+            <div
+              class="ticker-wrapper bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 py-2"
+            >
+              <div class="ticker flex whitespace-nowrap will-change-transform">
+                <!-- JS will populate this -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Grid of live cards -->
+          <div
+            id="liveGrid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ></div>
+        </section>
         <!-- Team Details Section -->
         <section class="anim-element">
           <h2 class="text-3xl font-bold text-center mb-8 text-slate-100">
@@ -560,7 +733,7 @@
           role: "Team Leader",
           roleBg: "bg-sky-500",
           boardRoll: 731286,
-          focus: "Full-Stack & Project Lead",
+          focus: "Full-Stack Developer & Project Lead",
           nameColor: "text-sky-400",
         },
         {
@@ -616,6 +789,182 @@
     `;
 
         teamGrid.appendChild(card);
+      });
+
+      //live link
+
+      // --- Live Links Data ---
+      const liveLinks = [
+        {
+          title: "Student Portal",
+          url: "https://institute-management-system-fpi.vercel.app/",
+          description: "Real-time student data & results",
+          status: "LIVE",
+          badgeColor: "bg-green-500",
+          traffic: 78, // for example to display percentage if needed
+        },
+        {
+          title: "Admin Dashboard",
+          url: "https://institute-management-system-fpi.vercel.app/",
+          description: "Management dashboard (internal)",
+          status: "LIVE",
+          badgeColor: "bg-sky-500",
+          traffic: 64,
+        },
+        {
+          title: "Admissions Page",
+          url: "https://institute-management-system-fpi.vercel.app/",
+          description: "Application & admissions live form",
+          status: "MAINTENANCE",
+          badgeColor: "bg-amber-500",
+          traffic: 34,
+        },
+        {
+          title: "Library System",
+          url: "https://institute-management-system-fpi.vercel.app/",
+          description: "Catalog & borrowing",
+          status: "LIVE",
+          badgeColor: "bg-emerald-500",
+          traffic: 52,
+        },
+        {
+          title: "Project Showcase",
+          url: "https://institute-management-system-fpi.vercel.app/",
+          description: "Student projects & portfolios",
+          status: "LIVE",
+          badgeColor: "bg-indigo-500",
+          traffic: 89,
+        },
+        {
+          title: "Payments Gateway",
+          url: "https://institute-management-system-fpi.vercel.app/",
+          description: "Tuition & fees checkout",
+          status: "OFFLINE",
+          badgeColor: "bg-rose-500",
+          traffic: 12,
+        },
+      ];
+
+      // --- Populate marquee ticker ---
+      (function populateTicker() {
+        const tickerEl = document.querySelector(".ticker");
+        // Create content twice for seamless loop
+        const build = () => {
+          const fragment = document.createDocumentFragment();
+          liveLinks.forEach((item) => {
+            const el = document.createElement("div");
+            el.className = "ticker-item px-4";
+            el.innerHTML = `
+          <span class="label mr-2">●</span>
+          <span class="project">${item.title}</span>
+          <span class="mx-2">—</span>
+          <span class="label">${item.description}</span>
+        `;
+            fragment.appendChild(el);
+          });
+          return fragment;
+        };
+        tickerEl.appendChild(build());
+        tickerEl.appendChild(build()); // duplicate so animation is smooth
+      })();
+
+      // --- Render live project cards ---
+      const liveGrid = document.getElementById("liveGrid");
+
+      liveLinks.forEach((link, idx) => {
+        const col = document.createElement("div");
+        col.className = "live-card p-6 stagger-in";
+
+        // create status color & small pulse
+        const statusColor =
+          link.status === "LIVE"
+            ? "bg-emerald-400"
+            : link.status === "MAINTENANCE"
+            ? "bg-amber-400"
+            : "bg-rose-400";
+
+        col.innerHTML = `
+      <div class="flex items-start justify-between">
+        <div>
+          <a href="${
+            link.url
+          }" target="_blank" rel="noopener noreferrer" class="text-lg font-bold block hover:underline text-slate-100">
+            ${link.title}
+          </a>
+          <p class="text-sm text-slate-400 mt-1">${link.description}</p>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <span class="inline-flex items-center gap-2 text-xs font-semibold px-2 py-1 rounded-full ${
+            link.badgeColor
+          } text-white">
+            ${link.status}
+          </span>
+          <div class="status-dot" style="background:${
+            link.status === "LIVE"
+              ? "linear-gradient(90deg,#34d399,#10b981)"
+              : link.status === "MAINTENANCE"
+              ? "#f59e0b"
+              : "#ef4444"
+          }"></div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="text-xs text-slate-400">Activity</div>
+        <div class="runbar">
+          <div class="fill" style="animation-duration: ${
+            1.8 + (idx % 4) * 0.5
+          }s;"></div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-400">
+          <div>Traffic</div>
+          <div class="font-semibold text-slate-100">${link.traffic}%</div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex gap-3">
+        <a href="${
+          link.url
+        }" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border border-transparent bg-gradient-to-r from-sky-600 to-sky-500 text-white shadow-sm hover:brightness-105">
+          Visit
+          <!-- simple external icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7v7M10 14L21 3M21 3l-9 9"/></svg>
+        </a>
+        <button class="copy-btn px-3 py-2 text-sm rounded-md border border-slate-700 text-slate-200 hover:bg-white/2">Copy URL</button>
+      </div>
+    `;
+
+        // copy button handler
+        const copyBtn = col.querySelector(".copy-btn");
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(link.url);
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => (copyBtn.textContent = "Copy URL"), 1200);
+          } catch (err) {
+            copyBtn.textContent = "Failed";
+            setTimeout(() => (copyBtn.textContent = "Copy URL"), 1200);
+          }
+        });
+
+        liveGrid.appendChild(col);
+
+        // slight stagger: show on next tick
+        setTimeout(() => col.classList.add("show"), idx * 80);
+      });
+
+      // optional: pause marquee if user hovers any card
+      const ticker = document.querySelector(".ticker");
+      document.querySelectorAll("#liveGrid .live-card").forEach((card) => {
+        card.addEventListener(
+          "mouseenter",
+          () => (ticker.style.animationPlayState = "paused")
+        );
+        card.addEventListener(
+          "mouseleave",
+          () => (ticker.style.animationPlayState = "running")
+        );
       });
     </script>
   </body>
